@@ -1,0 +1,15 @@
+@0
+# test comment
+START:
+MOV 42 ACC
+ADD ACC
+SAV
+SUB 2
+
+SWP
+JMP START
+@4
+MOV -1, ACC
+SWP
+ADD -2
+NEG
