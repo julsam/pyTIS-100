@@ -117,7 +117,7 @@ class Parser(object):
             self._compile_jlz()
         elif self._is_token(TCOMMAND, KW_JRO):
             self._compile_jro()
-        elif self._is_token(TCOMMAND, KW_HALT):
+        elif self._is_token(TCOMMAND, KW_HCF):
             self._compile_halt()
         else:
             print self.lexer.peek_next_token()
@@ -125,8 +125,8 @@ class Parser(object):
             raise ParserError(TCOMMAND, None, self.lexer.lines_number[self.lexer._index+1])
 
     def _compile_halt(self):
-        self._expect(TCOMMAND, KW_HALT)
-        self.instr.append(Instruction(INSTR_HALT))
+        self._expect(TCOMMAND, KW_HCF)
+        self.instr.append(Instruction(KW_HCF))
 
     def _compile_nop(self):
         self._expect(TCOMMAND, KW_NOP)

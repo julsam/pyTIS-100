@@ -29,7 +29,7 @@ class BasicNode(ParserNode):
         super(BasicNode, self).__init__()
         self.id = _id
         self.ip = 0
-        self.halt = False
+        self.halted = False
 
         self.ports = []
         self.read_locked = False # can the neighbor node read from this node ? set to false after each cycle ending
@@ -77,7 +77,7 @@ class BasicExecutionNode(BasicNode):
     def run(self):
         if len(self.instr) < 1:
             return
-        while not self.halt:
+        while not self.halted:
             self.cycle()
 
     def first_pass(self):
@@ -267,9 +267,9 @@ class BasicExecutionNode(BasicNode):
             self.ip = addr
             is_jumping = True
         # HALT
-        elif instr.type == INSTR_HALT:
+        elif instr.type == INSTR_HCF:
             # HCF Halt and Catch Fire
-            self.halt = True
+            self.halted = True
         else:
             print 'Unknown opcode',
 

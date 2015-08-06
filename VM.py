@@ -108,8 +108,10 @@ class VM(object):
             for node in self.outputs:
                 node.after_cycle()
 
+            # exit
             for node in self.inputs:
                 if node.end_reached is True:
                     return
-            # process messaging between nodes
-            pass
+            for node in self.nodes:
+                if node.halted is True:
+                    return

@@ -26,10 +26,10 @@ KW_JNZ = 'JNZ'
 KW_JGZ = 'JGZ'
 KW_JLZ = 'JLZ'
 KW_JRO = 'JRO'
-KW_HALT = 'HALT'
+KW_HCF = 'HCF'
 
 lang_commands = [KW_NOP, KW_MOV, KW_SWP, KW_SAV, KW_ADD, KW_SUB, KW_NEG,
-                 KW_JMP, KW_JEZ, KW_JNZ, KW_JGZ, KW_JLZ, KW_JRO, KW_HALT]
+                 KW_JMP, KW_JEZ, KW_JNZ, KW_JGZ, KW_JLZ, KW_JRO, KW_HCF]
 
 KW_ACC   = 'ACC'
 KW_BAK   = 'BAK'
