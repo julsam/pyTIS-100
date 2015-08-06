@@ -270,6 +270,8 @@ class BasicExecutionNode(BasicNode):
         elif instr.type == INSTR_HCF:
             # HCF Halt and Catch Fire
             self.halted = True
+        elif instr.type == INSTR_NOP:
+            pass
         else:
             print 'Unknown opcode',
 
