@@ -1,5 +1,5 @@
 import re
-from Node import BasicExecutionNode, InputNode
+from Node import BasicExecutionNode, InputNode, OutputNode
 from Enums import *
 
 class VM(object):
@@ -22,14 +22,21 @@ class VM(object):
         input_node = InputNode(0)
         self.inputs.append(input_node)
         input_node.connect(self.nodes[1], PORT_DOWN)
-        input_node.values = [1, 42, 50, 2, 10, -1, -999]
+        #input_node.values = [1, 42, 50, 2, 10, -1, -999]
+        input_node.values = [66, 34, 88, 91, 53, 96, 47,
+                             68, 83, 59, 58, 56, 15, 81,
+                             18, 95, 44, 72, 66, 14, 81,
+                             43, 45, 23, 72, 33, 23, 29,
+                             30, 58, 75, 44, 62, 38, 60,
+                             82, 24, 52]
 
 
     def set_outputs(self):
         pass
-        # output_node = PortNode(0)
-        # self.outputs.append(output_node)
-        # output_node.connect(self.nodes[10], PORT_UP)
+        output_node = OutputNode(0)
+        self.outputs.append(output_node)
+        output_node.connect(self.nodes[10], PORT_UP)
+        output_node.len_objective = len(self.inputs[0].values)
 
     def split_sourcecode(self, fn):
         f = open(fn, 'r')
@@ -83,7 +90,9 @@ class VM(object):
         for node in self.nodes:
             node.first_pass()
 
-        for i in range(20):
+        # for i in range(20):
+        i = 1
+        while True:
             for node in self.inputs:
                 node.before_cycle()
             for node in self.nodes:
@@ -109,9 +118,19 @@ class VM(object):
                 node.after_cycle()
 
             # exit
-            for node in self.inputs:
-                if node.end_reached is True:
-                    return
+            # for node in self.inputs:
+            #     if node.end_reached is True:
+            #         return
             for node in self.nodes:
                 if node.halted is True:
                     return
+            for node in self.outputs:
+                if len(node.values) == node.len_objective:
+                    return
+            self.compare_io()
+            i += 1
+
+    def compare_io(self):
+        for i, o in map(None, self.inputs, self.outputs):
+            for ival, oval in map(None, i.values, o.values):
+                print "|", ival, "|", oval, "|"

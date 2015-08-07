@@ -292,7 +292,7 @@ class InputNode(BasicExecutionNode):
         self.end_reached = False
 
     def __repr__(self):
-        return "PortNode %i %s\n" % (self.id, self.instr)
+        return "InputNode %i %s\n" % (self.id, self.instr)
 
     def fetch_next(self):
         self.ip += 1
@@ -321,8 +321,66 @@ class InputNode(BasicExecutionNode):
             self.write(dest, value)
             return
         else:
-            self.regs[dest] = value
+            raise Exception()
+        #     self.regs[dest] = value
+        #
+        # self.blocked = False
+        #
+        # self.fetch_next()
+
+
+class OutputNode(BasicExecutionNode):
+    def __init__(self, _id=None):
+        super(OutputNode, self).__init__(_id)
+        self.regs = { REG_ACC: 0,
+                      REG_LEFT: None, REG_RIGHT: None, REG_UP: None, REG_DOWN: None }
+        self.values = []
+        self.len_objective = 0
+
+    def __repr__(self):
+        return "OutputNode %i %s\n" % (self.id, self.instr)
+
+    def fetch_next(self):
+        pass
+
+    def before_cycle(self):
+        if self.deadlock and self.state == NODE_STATE_READ:
+            #print self.id, "deadlock", self.state
+            direction = self.neighbors.keys()[0]
+            neighbor = self.neighbors[direction]
+            value = neighbor.read_port(direction)
+            if value is not None:
+                #self.values.append(value)
+                self.regs[direction] = value
+                self.blocked = False
+                self.deadlock = False
+                self.state = NODE_STATE_IDLE
+            else:
+                return
+
+    def cycle(self):
+        self.cycle_count += 1
+
+        if self.blocked:
+            return
+
+        #print '[', self.id, ']', self.ip, self.state, ':', instr
+
+        # MOV
+        self.blocked = True
+
+        # value = self.values[self.ip]
+        src = self.neighbors.keys()[0]
+
+        if src in PORT_REGISTERS:
+            value = self.read_from(src)
+            if value is None:
+                return
+            self.values.append(value)
+        else:
+            raise Exception()
+            #value = self.regs[dest] = self.regs[src]
 
         self.blocked = False
 
-        self.fetch_next()
+        # self.fetch_next()
