@@ -23,12 +23,18 @@ class VM(object):
         self.inputs.append(input_node)
         input_node.connect(self.nodes[1], PORT_DOWN)
         #input_node.values = [1, 42, 50, 2, 10, -1, -999]
-        input_node.values = [66, 34, 88, 91, 53, 96, 47,
-                             68, 83, 59, 58, 56, 15, 81,
-                             18, 95, 44, 72, 66, 14, 81,
-                             43, 45, 23, 72, 33, 23, 29,
-                             30, 58, 75, 44, 62, 38, 60,
-                             82, 24, 52]
+        # input_node.values = [66, 34, 88, 91, 53, 96, 96, 47,
+        #                      68, 83, 59, 58, 56, 15, 81,
+        #                      18, 95, 44, 72, 66, 14, 81,
+        #                      43, 45, 23, 72, 33, 23, 29,
+        #                      30, 58, 75, 44, 62, 38, 60,
+        #                      82, 24, 52]
+        input_node.values = [0, 32, 30, 27, 24, 28, 37,
+                             33, 24, 13, 9, 13, 9, 13,
+                             12, 14, 23, 21, 23, 19, 9,
+                             18, 8, -3, 6, 3, 14, 25,
+                             15, 14, 3, 1, 2, -1, 1,
+                             -10, -7, -7, -11]
 
 
     def set_outputs(self):
@@ -100,7 +106,7 @@ class VM(object):
             for node in self.outputs:
                 node.before_cycle()
 
-            print "-- cycle", i+1
+            print "-- cycle", i
             for node in self.inputs:
                 node.cycle()
             for node in self.nodes:
@@ -127,7 +133,7 @@ class VM(object):
             for node in self.outputs:
                 if len(node.values) == node.len_objective:
                     return
-            self.compare_io()
+            #self.compare_io()
             i += 1
 
     def compare_io(self):

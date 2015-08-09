@@ -158,11 +158,11 @@ class BasicExecutionNode(BasicNode):
         if len(self.instr) < 1:
             return
 
+        instr = self.fetch()
+
         if self.blocked:
             return
-
-        instr = self.fetch()
-        #print '[', self.id, ']', self.ip, self.state, ':', instr
+        #print '[', self.id, ']', self.ip, self.state, ':', instr, self.regs
 
         is_jumping = False
 
