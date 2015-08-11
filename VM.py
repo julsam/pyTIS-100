@@ -5,8 +5,10 @@ from Enums import *
 class VM(object):
     def __init__(self):
         self.nodes = []
-        self.inputs = []
-        self.outputs = []
+        self.input_nodes = []
+        self.output_nodes = []
+        self.input_values = []
+        self.output_values = []
 
     def create_nodes(self):
         self.nodes = []
@@ -15,34 +17,26 @@ class VM(object):
             self.nodes.append(node)
 
         self.connect_nodes()
-        self.set_inputs()
-        self.set_outputs()
+        self.create_input_nodes()
+        self.create_output_nodes()
 
-    def set_inputs(self):
-        input_node = InputNode(0)
-        self.inputs.append(input_node)
-        input_node.connect(self.nodes[1], PORT_DOWN)
-        #input_node.values = [1, 42, 50, 2, 10, -1, -999]
-        # input_node.values = [66, 34, 88, 91, 53, 96, 96, 47,
-        #                      68, 83, 59, 58, 56, 15, 81,
-        #                      18, 95, 44, 72, 66, 14, 81,
-        #                      43, 45, 23, 72, 33, 23, 29,
-        #                      30, 58, 75, 44, 62, 38, 60,
-        #                      82, 24, 52]
-        input_node.values = [0, 32, 30, 27, 24, 28, 37,
-                             33, 24, 13, 9, 13, 9, 13,
-                             12, 14, 23, 21, 23, 19, 9,
-                             18, 8, -3, 6, 3, 14, 25,
-                             15, 14, 3, 1, 2, -1, 1,
-                             -10, -7, -7, -11]
+    def create_input_nodes(self):
+        for i, input_vals in enumerate(self.input_values):
+            if input_vals is not None:
+                node = InputNode(i)
+                node.values = input_vals[:]
+                node.connect(self.nodes[i], PORT_DOWN)
+                self.input_nodes.append(node)
 
-
-    def set_outputs(self):
-        pass
-        output_node = OutputNode(0)
-        self.outputs.append(output_node)
-        output_node.connect(self.nodes[10], PORT_UP)
-        output_node.len_objective = len(self.inputs[0].values)
+    def create_output_nodes(self):
+        for i, output_vals in enumerate(self.output_values):
+            if output_vals is not None:
+                node = OutputNode(i)
+                node.values = output_vals[:]
+                pos = WIDTH * (HEIGHT - 1) + i
+                node.connect(self.nodes[pos], PORT_UP)
+                node.len_objective = len(self.input_nodes[0].values)
+                self.output_nodes.append(node)
 
     def split_sourcecode(self, fn):
         f = open(fn, 'r')
@@ -68,6 +62,35 @@ class VM(object):
         print "split_sourcecode nodes:"
         for node in self.nodes:
             print node.id, node.source_code
+
+    def load(self, tis_filename):
+        import os, imp
+        if os.path.exists(tis_filename):
+            dir_name = os.path.dirname(tis_filename)
+            basename, extension = os.path.splitext(os.path.basename(tis_filename))
+            test_filename = dir_name + '/' + basename + '.py'
+            if os.path.exists(test_filename):
+                mod = imp.load_source(basename, test_filename)
+                self.add_input_list(mod, ['TIS_IN_0', 'TIS_IN_1', 'TIS_IN_2', 'TIS_IN_3'])
+                self.add_output_list(mod, ['TIS_OUT_0', 'TIS_OUT_1', 'TIS_OUT_2', 'TIS_OUT_3'])
+
+            self.create_nodes()
+            self.split_sourcecode(tis_filename)
+            self.parse()
+
+    def add_input_list(self, mod, lst):
+        for i in lst:
+            if hasattr(mod, i):
+                self.input_values.append(getattr(mod, i))
+            else:
+                self.input_values.append(None)
+
+    def add_output_list(self, mod, lst):
+        for i in lst:
+            if hasattr(mod, i):
+                self.output_values.append(getattr(mod, i))
+            else:
+                self.output_values.append(None)
 
     def parse(self):
         '''Distributed parsing'''
@@ -99,44 +122,45 @@ class VM(object):
         # for i in range(20):
         i = 1
         while True:
-            for node in self.inputs:
+            for node in self.input_nodes:
                 node.before_cycle()
             for node in self.nodes:
                 node.before_cycle()
-            for node in self.outputs:
+            for node in self.output_nodes:
                 node.before_cycle()
 
             print "-- cycle", i
-            for node in self.inputs:
+            for node in self.input_nodes:
                 node.cycle()
             for node in self.nodes:
                 node.cycle()
-            for node in self.outputs:
+            for node in self.output_nodes:
                 node.cycle()
 
-            for node in self.inputs:
+            for node in self.input_nodes:
                 node.after_cycle()
             for node in self.nodes:
                 node.after_cycle()
                 if len(node.instr) > 0:
                     print '[', node.id, ']', node.ip, node.state, ':', node.fetch(), node.regs
-            for node in self.outputs:
+            for node in self.output_nodes:
                 node.after_cycle()
 
             # exit
-            # for node in self.inputs:
+            # for node in self.input_nodes:
             #     if node.end_reached is True:
             #         return
             for node in self.nodes:
                 if node.halted is True:
                     return
-            for node in self.outputs:
+            for node in self.output_nodes:
                 if len(node.values) == node.len_objective:
                     return
             #self.compare_io()
             i += 1
 
     def compare_io(self):
-        for i, o in map(None, self.inputs, self.outputs):
-            for ival, oval in map(None, i.values, o.values):
-                print "|", ival, "|", oval, "|"
+        for i, o in map(None, self.input_nodes, self.output_nodes):
+            if i is not None and o is not None:
+                for ival, oval in map(None, i.values, o.values):
+                    print "|", ival, "|", oval, "|"
